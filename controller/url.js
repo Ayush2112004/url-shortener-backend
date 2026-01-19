@@ -1,0 +1,29 @@
+const { nanoid } = require("nanoid");
+const { Url } = require("../model/url");
+
+async function generateShortUrl(req, res) {
+  const { redirectUrl } = req.body; 
+
+  if (!redirectUrl) {
+    return res.status(400).json({ message: "Redirect URL is required" });
+  }
+
+  const shortId = nanoid(8);
+
+  await Url.create({
+    shortId,
+    redirectUrl,       
+    visitHistory: [],
+  });
+
+  return res.status(201).json({ id: shortId });
+}
+async function urlAnalytics(req,res) {
+    const shortId=req.params.shortId;
+    const result=await Url.findOne({shortId});
+    return res.json({
+        totalClicks:result.visitHistory.length,
+        analytics:result.visitHistory,
+    })
+}
+module.exports = { generateShortUrl,urlAnalytics };
